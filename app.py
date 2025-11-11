@@ -79,23 +79,42 @@ def deleteStudent(student_id):
                 print(f"\n== Deleted student_id {student_id} ==")
 
 if __name__ == "__main__":
-    # 1) Show initial data
-    getAllStudents()
+    import argparse
+    from datetime import date
 
-    # 2) Create a new student
-    new_id = addStudent("Alice", "Wonder", "alice.wonder@example.com", date(2023, 9, 3))
+    parser = argparse.ArgumentParser(description="Students CRUD CLI")
+    sub = parser.add_subparsers(dest="cmd", required=True)
 
-    # 3) Verify insert
-    getAllStudents()
+    # list
+    sub.add_parser("list", help="Show all students")
 
-    # 4) Update that student's email
-    updateStudentEmail(new_id, "alice.w@example.com")
+    # add
+    p_add = sub.add_parser("add", help="Add a new student")
+    p_add.add_argument("first", help="First name")
+    p_add.add_argument("last", help="Last name")
+    p_add.add_argument("email", help="Email (must be unique)")
+    p_add.add_argument("enrolled", help="Enrollment date YYYY-MM-DD")
 
-    # 5) Verify update
-    getAllStudents()
+    # update
+    p_upd = sub.add_parser("update", help="Update a student's email")
+    p_upd.add_argument("id", type=int, help="student_id")
+    p_upd.add_argument("email", help="New email")
 
-    # 6) Delete that student
-    deleteStudent(new_id)
+    # delete
+    p_del = sub.add_parser("delete", help="Delete a student by id")
+    p_del.add_argument("id", type=int, help="student_id")
 
-    # 7) Final verify
-    getAllStudents()
+    args = parser.parse_args()
+
+    if args.cmd == "list":
+        getAllStudents()
+    elif args.cmd == "add":
+        y, m, d = map(int, args.enrolled.split("-"))
+        addStudent(args.first, args.last, args.email, date(y, m, d))
+        getAllStudents()
+    elif args.cmd == "update":
+        updateStudentEmail(args.id, args.email)
+        getAllStudents()
+    elif args.cmd == "delete":
+        deleteStudent(args.id)
+        getAllStudents()
